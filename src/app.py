@@ -162,7 +162,7 @@ def scan_qr():
             payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             session_id = payload['session_id']
             
-            new_log = Attendance(student_name=student_name, session_id=session_id)
+            new_log = Attendance(username=student_name, session_id=session_id)
             db.session.add(new_log)
             db.session.commit()
             return '<script>alert("Attendance Marked Successfully!"); window.location="/";</script>'
