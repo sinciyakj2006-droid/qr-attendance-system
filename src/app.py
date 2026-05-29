@@ -134,8 +134,8 @@ def generate_qr():
 @app.route('/scan-qr', methods=['GET','POST'])
 def scan_qr():
     if request.method == 'POST':
-    token = request.form.get('token').strip()
-    try:
+        token = request.form.get('token').strip()
+        try:
         payload = jwt.decode(qr_token, app.config['SECRET_KEY'], algorithms=['HS256'])
         session_id = payload['session_id']
         new_log = Attendance(student_name=username, session_id=session_id)
