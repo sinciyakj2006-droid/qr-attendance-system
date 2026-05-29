@@ -133,8 +133,8 @@ def generate_qr():
 
 @app.route('/scan-qr', methods=['GET','POST'])
 def scan_qr():
-    username = request.form.get('username')
-    qr_token = request.form.get('qr_token')
+    if request.method == 'POST':
+    token = request.form.get('token').strip()
     try:
         payload = jwt.decode(qr_token, app.config['SECRET_KEY'], algorithms=['HS256'])
         session_id = payload['session_id']
