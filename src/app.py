@@ -100,7 +100,7 @@ def home():
     logs = Attendance.query.all()
     return render_template_string(HTML_TEMPLATE, logs=logs, qr_img=None)
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET','POST'])
 def register():
     username = request.form.get('username')
     password = request.form.get('password')
