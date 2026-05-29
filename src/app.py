@@ -69,7 +69,11 @@ HTML_TEMPLATE = """
         {% if qr_img %}
             <h4>Scan This Code:</h4>
             <img src="data:image/png;base64,{{ qr_img }}" width="200">
-            <p style="font-size:11px; color:red; word-break: break-all;">Token: {{ token[:60] }}...</p>
+            <p style="color: red; cursor: pointer; word-break: break-all;" 
+   onclick="window.getSelection().selectAllChildren(this);" 
+   title="Click to select all">
+   Token: <span>{{ token }}<span>
+</p>
         {% endif %}
     </div>
 
