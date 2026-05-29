@@ -131,7 +131,7 @@ def generate_qr():
     logs = Attendance.query.all()
     return render_template_string(HTML_TEMPLATE, logs=logs, qr_img=qr_b64, token=token)
 
-@app.route('/scan-qr', methods=['POST'])
+@app.route('/scan-qr', methods=['GET','POST'])
 def scan_qr():
     username = request.form.get('username')
     qr_token = request.form.get('qr_token')
