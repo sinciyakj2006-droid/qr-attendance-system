@@ -69,11 +69,28 @@ HTML_TEMPLATE = """
         {% if qr_img %}
             <h4>Scan This Code:</h4>
             <img src="data:image/png;base64,{{ qr_img }}" width="200">
-            <p style="color: red; cursor: pointer; word-break: break-all;" 
+           <p id="tokenText" style="color: red; word-break: break-all; cursor: pointer; background: #fff5f5; padding: 8px; border: 1px dashed red; border-radius: 4px;" 
    onclick="window.getSelection().selectAllChildren(this);" 
    title="Click to select all">
-   Token: <span>{{ token }}<span>
+   Token: {{ token }}
 </p>
+<button type="button" onclick="copyTokenText()" style="margin-top: 5px; padding: 6px 12px; background-color: #4A5568; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+    📋 Copy Full Token String
+</button>
+
+<script>
+function copyTokenText() {
+    var pText = document.getElementById("tokenText").innerText;
+    // This extracts just the raw eyJhbGci... token string cleanly
+    var cleanToken = pText.replace("Token: ", "").trim();
+    
+    navigator.clipboard.writeText(cleanToken).then(function() {
+        alert("Token copied cleanly to clipboard!");
+    }).catch(function(err) {
+        alert("Oops, browser blocked copy. Please manually highlight instead.");
+    });
+}
+</script>
         {% endif %}
     </div>
 
