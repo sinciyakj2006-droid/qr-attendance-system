@@ -137,50 +137,41 @@ def generate_qr():
     session_id = request.form.get('session_id')
     token = jwt.encode({
         'session_id': session_id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=60)
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=600)
     }, app.config['SECRET_KEY'], algorithm='HS256')
-    
+
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(token)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
-    
+
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     qr_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-    
+
     logs = Attendance.query.all()
     return render_template_string(HTML_TEMPLATE, logs=logs, qr_img=qr_b64, token=token)
 
-@app.route('/scan-qr', methods=['GET','POST'])
+@app.route('/scan-qr', methods=['GET', 'POST'])
 def scan_qr():
-if request.method == 'POST':
-
+    if request.method == 'POST':
         token = request.form.get('token').strip()
-
-        student_name = request.form.get('student_name') 
-
+        student_name = request.form.get('student_name') or request.form.get('username') or "Student"
+        
         try:
-
-            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256']) 
-
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             session_id = payload['session_id']
-
             
-
-            new_log = Attendance(student_name=student_name, session_id=session_id
-        db.session.add(new_log)
-        db.session.commit()
-        return '<script>alert("Attendance Marked Successfully!"); window.location="/";</script>'
-    except jwt.ExpiredSignatureError:
-        return '<script>alert("SECURITY BOUNDARY ENFORCED: This QR token has expired! It is past its 60-second validity window."); window.location="/";</script>'
-    except jwt.InvalidTokenError:
-        return '<script>alert("SECURITY BREAK: Malicious or altered token signature detected."); window.location="/";</script>'
+            new_log = Attendance(student_name=student_name, session_id=session_id)
+            db.session.add(new_log)
+            db.session.commit()
+            return '<script>alert("Attendance Marked Successfully!"); window.location="/";</script>'
+        except jwt.ExpiredSignatureError:
+            return '<script>alert("SECURITY BOUNDARY ENFORCED: This QR token has expired!"); window.location="/";</script>'
+        except jwt.InvalidTokenError:
+            return '<script>alert("SECURITY BREAK: Malicious or altered token signature detected."); window.location="/";</script>'
+            
+    return render_template_string(HTML_TEMPLATE, logs=Attendance.query.all())
 
 if __name__ == '__main__':
-
-    import os
-
-    port = int(os.environ.get("PORT", 5000))
-
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000)
