@@ -2,7 +2,7 @@ import os
 import io
 import base64
 import datetime
-from flask import Flask, request, render_template_string, redirect, url_for
+from flask import Flask, request, render_template_string, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import jwt
 import qrcode
@@ -234,12 +234,11 @@ def scan_qr():
             return jsonify({"success": True, "message": "Attendance marked"}), 200
 
         except jwt.ExpiredSignatureError:
-            return jsonify({"error": "QR expired. Generate new one"}), 400
-        except Exception as e:
-            app.logger.error(f"Scan error: {e}")
-            return jsonify({"error": "Server error"}), 500
-
-    return render_template_string(HTML_TEMPLATE)s
+             return jsonify({"error": "QR expired. Generate new one"}), 400
+             except Exception as e:
+                app.logger.error(f"Scan error: {str(e)}")
+                return jsonify({"error": str(e)}), 500
+                return render_template_string(HTML_TEMPLATE)s
 
 if __name__ == '__main__':
     # Binds dynamically to production environment configurations 
