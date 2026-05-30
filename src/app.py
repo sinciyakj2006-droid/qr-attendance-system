@@ -238,9 +238,10 @@ def scan_qr():
              except Exception as e:
                 app.logger.error(f"Scan error: {str(e)}")
                 return jsonify({"error": str(e)}), 500
-                return render_template_string(HTML_TEMPLATE)s
+                return render_template_string(HTML_TEMPLATE)
 
 if __name__ == '__main__':
     # Binds dynamically to production environment configurations 
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+    app.config['DEBUG'] = True
