@@ -212,34 +212,33 @@ def generate_qr():
 @app.route('/scan-qr', methods=['GET', 'POST'])
 def scan_qr():
     if request.method == 'POST':
-        # Safety fallback to capture variations of layout inputs
-        raw_token = request.form.get('token') or request.form.get('qr_token') or request.form.get('tokenText')
-        
-        if not raw_token:
-            return '<script>alert("Error: No token received from the web form."); window.location="/";</script>'
-            
-        token = raw_token.strip()
-        student_name = request.form.get('student_name') or request.form.get('username') or "Student"
-        
+        # Accept both JSON and form data
+        data = request.get_json() if request.is_json else request.form
+        raw_token = data.get('token') or data.get('qr')
+        student_name = data.get('student_name') or data.get('name')
+
+        if not raw_token or not student_name:
+            return jsonify({"error": "Missing token or student name"}), 400
+
         try:
+            token = raw_token.strip()
             payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             session_id = payload['session_id']
             
-            # Dual-column schema validation fallback layer
-            try:
-                new_log = Attendance(student_name=student_name, session_id=session_id)
-            except TypeError:
-                new_log = Attendance(username=student_name, session_id=session_id)
-                
+            # Add your DB save code here
+            new_log = Attendance(session_id=session_id, student_name=student_name.strip())
             db.session.add(new_log)
             db.session.commit()
-            return '<script>alert("Attendance Marked Successfully!"); window.location="/";</script>'
-        except jwt.ExpiredSignatureError:
-            return '<script>alert("SECURITY BOUNDARY ENFORCED: This QR token has expired!"); window.location="/";</script>'
-        except jwt.InvalidTokenError:
-            return '<script>alert("SECURITY BREAK: Malicious or altered token signature detected."); window.location="/";</script>'
             
-    return redirect(url_for('index'))
+            return jsonify({"success": True, "message": "Attendance marked"}), 200
+
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "QR expired. Generate new one"}), 400
+        except Exception as e:
+            app.logger.error(f"Scan error: {e}")
+            return jsonify({"error": "Server error"}), 500
+
+    return render_template_string(HTML_TEMPLATE)
 
 if __name__ == '__main__':
     # Binds dynamically to production environment configurations 
