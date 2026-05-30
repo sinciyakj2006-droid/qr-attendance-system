@@ -10,7 +10,8 @@ import qrcode
 app = Flask(__name__)
 
 # Secret key configuration for cryptographic token signing
-app.config['SECRET_KEY'] = 'MySecretLaptopKey123!'
+app.config['SECRET_KEY'] = os.environ.get('JWT_SECRET', 'dev-only-fallback-key-32-chars-minimum')
+
 
 # Fallback to local SQLite if DATABASE_URL environment variable isn't defined on Render
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -238,7 +239,7 @@ def scan_qr():
             app.logger.error(f"Scan error: {e}")
             return jsonify({"error": "Server error"}), 500
 
-    return render_template_string(HTML_TEMPLATE)
+    return render_template_string(HTML_TEMPLATE)s
 
 if __name__ == '__main__':
     # Binds dynamically to production environment configurations 
